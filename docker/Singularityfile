@@ -32,6 +32,8 @@ hmmer \
 kalign \
 tzdata \
 wget \
+aria2c \
+rsync \
 && rm -rf /var/lib/apt/lists/*
 
 # Compile HHsuite from source.
