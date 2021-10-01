@@ -34,6 +34,7 @@ ROOT_DIR="${DOWNLOAD_DIR}/params"
 SOURCE_URL="https://storage.googleapis.com/alphafold/alphafold_params_2021-07-14.tar"
 BASENAME=$(basename "${SOURCE_URL}")
 
+[ -d "${ROOT_DIR}" ] && echo "Info: directory already exists." && exit 0 
 mkdir --parents "${ROOT_DIR}"
 aria2c "${SOURCE_URL}" --dir="${ROOT_DIR}"
 tar --extract --verbose --file="${ROOT_DIR}/${BASENAME}" \

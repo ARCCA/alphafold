@@ -34,6 +34,7 @@ ROOT_DIR="${DOWNLOAD_DIR}/small_bfd"
 SOURCE_URL="https://storage.googleapis.com/alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz"
 BASENAME=$(basename "${SOURCE_URL}")
 
+[ -d "${ROOT_DIR}" ] && echo "Info: directory already exists." && exit 0
 mkdir --parents "${ROOT_DIR}"
 aria2c "${SOURCE_URL}" --dir="${ROOT_DIR}"
 pushd "${ROOT_DIR}"

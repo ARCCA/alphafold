@@ -39,6 +39,8 @@ ROOT_DIR="${DOWNLOAD_DIR}/pdb_mmcif"
 RAW_DIR="${ROOT_DIR}/raw"
 MMCIF_DIR="${ROOT_DIR}/mmcif_files"
 
+
+[ -d "${ROOT_DIR}" ] && echo "Info: directory already exists." && exit 0
 echo "Running rsync to fetch all mmCIF files (note that the rsync progress estimate might be inaccurate)..."
 mkdir --parents "${RAW_DIR}"
 rsync --recursive --links --perms --times --compress --info=progress2 --delete --port=33444 \

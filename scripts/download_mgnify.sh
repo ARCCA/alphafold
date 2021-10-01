@@ -36,6 +36,7 @@ ROOT_DIR="${DOWNLOAD_DIR}/mgnify"
 SOURCE_URL="https://storage.googleapis.com/alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz"
 BASENAME=$(basename "${SOURCE_URL}")
 
+[ -d "${ROOT_DIR}" ] && echo "Info: directory already exists." && exit 0
 mkdir --parents "${ROOT_DIR}"
 aria2c "${SOURCE_URL}" --dir="${ROOT_DIR}"
 pushd "${ROOT_DIR}"
