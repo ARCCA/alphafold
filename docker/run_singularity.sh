@@ -3,32 +3,34 @@
 create_mount ()
 {
   mount_name=$1
-  path=`greadlink -f $2`
+  path=`readlink -f $2`
   source_path=`dirname $path`
   target_path=$ROOT_MOUNT_DIRECTORY/$mount_name
   echo "Mounting $source_path -> $target_path" 1>&2
+  [ -f "bindings.txt" ] && . bindings.txt
   if [ -z "$SINGULARITY_BIND" ]
   then
     export SINGULARITY_BIND="$source_path:$target_path"
   else
     export SINGULARITY_BIND="${SINGULARITY_BIND},$source_path:$target_path"
   fi
-  echo $target_path
+  echo "export SINGULARITY_BIND=\"$SINGULARITY_BIND\"" > bindings.txt
+  echo "$target_path/`basename $path`"
 }
 
-DOWNLOAD_DIR='SET ME'
-output_dir='/tmp/alphafold'
+rm bindings.txt
 
-model_names=( \
-  'model_1' \
-  'model_2' \
-  'model_3' \
-  'model_4' \
-  'model_5' \
-)
+DOWNLOAD_DIR='/scratch/apps/biology/alphafold'
+
+ROOT_MOUNT_DIRECTORY='/mnt'
+output_dir=$PWD
+
+model_names='model_1,model_2,model_3,model_4,model_5'
+
+myargs=""
 
 data_dir=$DOWNLOAD_DIR
-myargs=""
+myargs="$myargs --data_dir=`create_mount data_dir $data_dir`"
 
 uniref90_database_path="$DOWNLOAD_DIR/uniref90/uniref90.fasta"
 myargs="$myargs --uniref90_database_path=`create_mount uniref90_database_path $uniref90_database_path`"
@@ -61,7 +63,6 @@ myargs="$myargs --template_mmcif_dir=`create_mount template_mmcif_dir $template_
 obsolete_pdbs_path="$DOWNLOAD_DIR/pdb_mmcif/obsolete.dat"
 myargs="$myargs --obsolete_pdbs_path=`create_mount obsolete_pdbs_path $obsolete_pdbs_path`"
 
-ROOT_MOUNT_DIRECTORY='/mnt'
 
 while :; do
   case $1 in
@@ -70,7 +71,6 @@ while :; do
       fasta=""
       for FASTA_PATH in ${2//,/ }
       do
-        echo $FASTA_PATH
         target_fasta_path=$(create_mount "fasta_path_${i}" "$FASTA_PATH")
         if [ -z "$fasta" ]
         then
@@ -102,15 +102,18 @@ while :; do
   shift
 done
 
-
+. bindings.txt
 # Create output
 export SINGULARITY_BIND=$SINGULARITY_BIND,${output_dir}:${ROOT_MOUNT_DIRECTORY}/output
 
-command_args="$myargs --output_dir=${ROOT_MOUNT_DIRECTORY}/output --model_name=${model_names// /,} --max_template_date=${max_template_date} --preset=full_dbs --benchmark=0 --logtostderr"
+command_args="$myargs --output_dir=${ROOT_MOUNT_DIRECTORY}/output --model_names=${model_names} --max_template_date=${max_template_date} --preset=full_dbs --benchmark=0 --logtostderr"
+
+export TF_FORCE_UNIFIED_MEMORY=1
+export XLA_PYTHON_CLIENT_MEM_FRACTION=4.0
 
 echo $command_args
 echo $SINGULARITY_BIND
-echo singularity run --nv $ALPHAFOLD_IMAGE $command_args
+singularity run --nv $ALPHAFOLD_IMAGE $command_args
 
 
 
